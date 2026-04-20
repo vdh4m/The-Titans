@@ -33,21 +33,22 @@ class CourseCard extends StatelessWidget {
         child: Row(children: [
           // Icon
           Container(
-            width: 50, height: 50,
+            width: 44, height: 44,
             decoration: BoxDecoration(
               gradient: LinearGradient(colors: isSide
                   ? [AppTheme.accentColor, Colors.deepOrange]
                   : [AppTheme.primaryColor, AppTheme.secondaryColor]),
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(isSide ? Icons.extension_rounded : Icons.menu_book_rounded,
-                color: Colors.white),
+                color: Colors.white, size: 20),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 14),
           // Text info
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // Course title
                 Text(isAr ? course.titleAr : course.titleEn,
@@ -58,7 +59,7 @@ class CourseCard extends StatelessWidget {
                 // Doctor name
                 Text(course.doctorName,
                     style: TextStyle(
-                        color: color, fontSize: 12, fontWeight: FontWeight.w600),
+                        color: color, fontSize: 11, fontWeight: FontWeight.w600),
                     maxLines: 1, overflow: TextOverflow.ellipsis),
                 // For main courses: show university · faculty · year
                 if (isMain) ...{
