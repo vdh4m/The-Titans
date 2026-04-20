@@ -78,7 +78,7 @@ class _CourseMaterialPickerState extends State<CourseMaterialPicker> {
       final snap = await FirebaseFirestore.instance
         .collection('materials')
         .where('courseId', isEqualTo: courseId)
-        .where('type', isEqualTo: 'pdf')
+        .where('fileType', isEqualTo: 'pdf')
         .get();
       final mats = snap.docs.map((d) => {'id': d.id, ...d.data()}).toList();
       if (mounted) setState(() { _materials = mats; _loadingMats = false; });
@@ -88,13 +88,17 @@ class _CourseMaterialPickerState extends State<CourseMaterialPicker> {
   }
 
   Future<void> _downloadAndSelect(Map<String, dynamic> mat, String courseTitle) async {
-    final url = mat['url'] as String? ?? '';
+    final url = mat['fileUrl'] as String? ?? '';
     if (url.isEmpty) return;
     setState(() => _downloading = true);
     try {
       final res = await Dio().get<List<int>>(url, options: Options(responseType: ResponseType.bytes));
       final bytes = Uint8List.fromList(res.data!);
-      widget.onPdfSelected(bytes, courseTitle, mat['title'] as String? ?? 'Material');
+      final isAr = context.read<AppProvider>().isArabic;
+      final matTitle = isAr
+        ? (mat['titleAr'] as String? ?? mat['titleEn'] as String? ?? 'Material')
+        : (mat['titleEn'] as String? ?? mat['titleAr'] as String? ?? 'Material');
+      widget.onPdfSelected(bytes, courseTitle, matTitle);
       if (mounted) setState(() { _selectedMat = mat; _downloading = false; });
     } catch (_) {
       if (mounted) setState(() => _downloading = false);
@@ -198,7 +202,10 @@ class _CourseMaterialPickerState extends State<CourseMaterialPicker> {
                         Icon(Icons.picture_as_pdf_rounded,
                           color: isSelected ? AppTheme.primaryColor : Colors.red.shade400, size: 20),
                         const SizedBox(width: 10),
-                        Expanded(child: Text(mat['title'] as String? ?? 'PDF',
+                        Expanded(child: Text(
+                          isAr
+                            ? (mat['titleAr'] as String? ?? mat['titleEn'] as String? ?? 'PDF')
+                            : (mat['titleEn'] as String? ?? mat['titleAr'] as String? ?? 'PDF'),
                           style: TextStyle(fontSize: 13, fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500))),
                         if (_downloading && isSelected)
                           const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
