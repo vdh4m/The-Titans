@@ -2,6 +2,9 @@
 
 **StudyHub** is a full-featured Flutter mobile application designed to revolutionize the educational experience for Egyptian university students and doctors (professors). It bridges the gap between students and educators by providing a unified platform for course management, AI-powered study tools, real-time communication, and smart productivity features.
 
+**Live Demo:** [studyhub-33b35.web.app](https://studyhub-33b35.web.app)
+
+
 ---
 
 ## 🎯 Problem
