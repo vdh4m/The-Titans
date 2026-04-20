@@ -14,7 +14,7 @@
 
 StudyHub provides a **dual-role platform** (Student & Doctor) with:
 
-- **Structured course management** with file uploads (PDFs, images, videos, docs) via Cloudinary.
+- **Structured course management** with file uploads (PDFs, images, videos, docs) via Supabase.
 - **In-app file viewing** — PDFs stream directly inside the app using `SfPdfViewer.network`, images via `PhotoView`, videos via `Chewie`, and documents via embedded Google Docs Viewer (WebView).
 - **Live meetings** powered by Jitsi Meet, launched securely in-app via Chrome Custom Tabs / Safari View Controller for 100% crash-free stability.
 - **AI-powered tools** using Google Gemini API — including mock exams, note summarization, quiz generation, flashcards, smart revision, and PDF summarization.
@@ -35,7 +35,7 @@ StudyHub provides a **dual-role platform** (Student & Doctor) with:
 | **State**      | Provider (`AuthProvider`, `AppProvider`, `StudyProvider`)         |
 | **Backend**    | Firebase (Auth, Firestore, Storage, Messaging)                   |
 | **AI**         | Google Gemini API (`google_generative_ai`)                       |
-| **Storage**    | Cloudinary (file uploads), Hive (offline cache)                  |
+| **Storage**    | Supabase (file uploads), Hive (offline cache)                  |
 | **Payments**   | Paymob integration                                               |
 | **Meetings**   | Jitsi Meet via `url_launcher` (inAppWebView)                     |
 | **PDF Viewer** | Syncfusion Flutter PDF Viewer (network streaming)                |
@@ -66,7 +66,7 @@ StudyHub provides a **dual-role platform** (Student & Doctor) with:
 ### 📖 Courses
 - **Courses Screen** — browse and manage enrolled/created courses
 - **Course Detail** — view materials, quizzes, and meeting schedules
-- **Upload Material Dialog** — doctors upload PDFs, images, videos, and documents to Cloudinary
+- **Upload Material Dialog** — doctors upload PDFs, images, videos, and documents to Supabase
 - **File Viewer** — universal in-app viewer:
   - **PDF** → `SfPdfViewer.network` (direct streaming, no download required)
   - **Images** → `PhotoView` with pinch-zoom
@@ -213,7 +213,7 @@ flutter run
 ### Configuration
 
 1. Set up a Firebase project and add `google-services.json` (Android) and `GoogleService-Info.plist` (iOS).
-2. Configure Cloudinary credentials in `constants.dart`.
+2. Configure Supabase credentials in `constants.dart`.
 3. Set up Paymob API keys for payment integration.
 4. Add your Google Gemini API key in `constants.dart`.
 
