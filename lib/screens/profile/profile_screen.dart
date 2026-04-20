@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:studyhub/generated/l10n/app_localizations.dart';
 import 'package:studyhub/screens/payment/premium_screen.dart';
 import 'package:studyhub/screens/payment/subscription_screen.dart';
+import 'package:studyhub/utils/responsive.dart';
 import 'package:studyhub/utils/constants.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/app_provider.dart';
@@ -47,9 +48,10 @@ class ProfileScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(automaticallyImplyLeading: false, title: Text(l10n.profile)),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-        child: Column(children: [
+      body: ResponsiveBody(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+          child: Column(children: [
 
           // ── Hero gradient card ───────────────────────────────────────
           Container(
@@ -307,8 +309,9 @@ class ProfileScreen extends StatelessWidget {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             ),
           ),
-          const SizedBox(height: 80),
-        ]),
+            const SizedBox(height: 80),
+          ]),
+        ),
       ),
     );
   }
@@ -439,8 +442,8 @@ class _InfoRow extends StatelessWidget {
             child: Text(label, style: TextStyle(
                 color: isDark ? Colors.white60 : Colors.black54, fontSize: 13)),
           ),
-          const Spacer(),
-          Flexible(child: Text(value,
+          const SizedBox(width: 16),
+          Expanded(child: Text(value,
               style: TextStyle(
                   fontWeight: FontWeight.w600, fontSize: 13,
                   color: isDark ? Colors.white : Colors.black87),
