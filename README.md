@@ -140,6 +140,11 @@ StudyHub provides a **dual-role platform** (Student & Doctor) with:
 - **Cairo font** — consistent Arabic/English typography
 - **Responsive** — adapts to all screen sizes
 
+### 🎨 Figma Design
+
+Explore the full design system and UI mockups on Figma:
+[StudyHub Design on Figma](https://www.figma.com/design/ONy1RlE0a00yOiUb4UbcYr/Study-Hub?node-id=0-1&t=4BGLktOhigo3DjWC-1)
+
 ---
 
 ## 📂 Project Structure
