@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../providers/app_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../utils/app_theme.dart';
+import '../../utils/responsive.dart';
 import 'study_groups_screen.dart';
 import 'ask_community_screen.dart';
 import 'study_battle_screen.dart';
@@ -28,11 +29,12 @@ class CommunityScreen extends StatelessWidget {
         automaticallyImplyLeading: false,
         title: Text(isAr ? 'المجتمع والأدوات' : 'Community & Tools'),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      body: ResponsiveBody(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
 
             // Daily Challenge Banner — students only
             if (user != null && user.isStudent) GestureDetector(
@@ -180,7 +182,8 @@ class CommunityScreen extends StatelessWidget {
             ),
 
             const SizedBox(height: 80),
-          ],
+            ],
+          ),
         ),
       ),
     );
