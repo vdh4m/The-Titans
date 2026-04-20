@@ -29,7 +29,7 @@ class _AIScreenState extends State<AIScreen> {
   bool _loading = false;
 
   // ← ضع الـ API Key هنا
-  static const _apiKey = 'AIzaSyBFYmfZC_D-4vwigPrOM0MiPYYEZb4UdBM';
+  static const _apiKey = 'AIzaSyAZZa9NXGiAV4JCnlFT96juU37cMWPj9ko';
 
   static const _systemPrompt =
       'أنت مساعد تعليمي ذكي للطلاب والأساتذة في الجامعات المصرية. '

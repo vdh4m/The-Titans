@@ -17,7 +17,7 @@ class MockExamScreen extends StatefulWidget {
 }
 
 class _MockExamScreenState extends State<MockExamScreen> {
-  static const _apiKey = 'AIzaSyBFYmfZC_D-4vwigPrOM0MiPYYEZb4UdBM';
+  static const _apiKey = 'AIzaSyAZZa9NXGiAV4JCnlFT96juU37cMWPj9ko';
   List<Map<String, dynamic>> _questions = [];
   bool _loading = false, _examStarted = false, _examFinished = false;
   int _current = 0, _score = 0;
@@ -84,12 +84,23 @@ Return ONLY JSON no backticks:
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(children: [
-          Container(width: double.infinity, padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(gradient: const LinearGradient(colors: [Color(0xFF7209B7), AppTheme.primaryColor], begin: Alignment.topLeft, end: Alignment.bottomRight), borderRadius: BorderRadius.circular(20)),
-            child: Column(children: [
-              const Text('📝', style: TextStyle(fontSize: 48)),
-              Text(isAr ? 'امتحان تجريبي ذكي' : 'Smart Mock Exam', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 20)),
-              Text(isAr ? 'الـ AI يعمل امتحان من مادتك الفعلية' : 'AI generates an exam from your actual course material', style: const TextStyle(color: Colors.white70, fontSize: 13)),
+          Container(
+            width: double.infinity, padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(colors: [Color(0xFF7209B7), AppTheme.primaryColor],
+                begin: Alignment.topLeft, end: Alignment.bottomRight),
+              borderRadius: BorderRadius.circular(20)),
+            child: Row(children: [
+              Container(padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), shape: BoxShape.circle),
+                child: const Icon(Icons.psychology, color: Colors.white, size: 28)),
+              const SizedBox(width: 16),
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(isAr ? 'امتحان تجريبي ذكي' : 'Smart Mock Exam',
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18)),
+                Text(isAr ? 'الـ AI يعمل امتحان من مادتك الفعلية' : 'AI generates an exam from your actual course material',
+                  style: const TextStyle(color: Colors.white70, fontSize: 12)),
+              ])),
             ])),
           const SizedBox(height: 24),
 
@@ -132,7 +143,12 @@ Return ONLY JSON no backticks:
           const SizedBox(height: 16),
 
           if (_useCourse)
-            CourseMaterialPicker(onPdfSelected: _generateFromMaterial)
+            CourseMaterialPicker(
+              onPdfSelected: _generateFromMaterial,
+              actionLabel: 'Start Exam',
+              actionLabelAr: 'ابدأ الامتحان',
+              actionIcon: Icons.play_circle_filled_rounded,
+            )
           else
             GestureDetector(
               onTap: _loading ? null : _pickFile,

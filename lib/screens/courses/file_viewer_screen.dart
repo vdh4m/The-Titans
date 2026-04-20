@@ -1,10 +1,17 @@
+import 'dart:typed_data';
 import 'package:chewie/chewie.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:photo_view/photo_view.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:video_player/video_player.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../../utils/app_theme.dart';
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:ui_web' as ui_web;
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:html' as html;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // FileViewerScreen — opens every file type INSIDE the app
@@ -32,11 +39,13 @@ class FileViewerScreen extends StatefulWidget {
 class _FileViewerScreenState extends State<FileViewerScreen> {
   _Phase _phase = _Phase.loading;
   String  _error = '';
+  String? _iframeViewId;
 
   // viewers
   VideoPlayerController? _vCtrl;
   ChewieController?      _cCtrl;
   WebViewController?     _webCtrl;
+  Uint8List?             _pdfBytes;
 
   // ── type helpers ─────────────────────────────────────────────────────────
   String get _ext => widget.fileType.toLowerCase().replaceAll('.', '');
@@ -45,16 +54,8 @@ class _FileViewerScreenState extends State<FileViewerScreen> {
   bool get _isImage => ['jpg','jpeg','png','gif','webp','bmp','heic'].contains(_ext);
   bool get _isVideo => ['mp4','mov','avi','mkv','webm','3gp','m4v'].contains(_ext);
   
-  // Cloudinary often routes files uploaded simply as raw data.
-  // We ensure the URL gives the proper raw file.
-  String get _cleanUrl {
-    final url = widget.fileUrl;
-    if (!url.contains('cloudinary.com') || _isVideo || _isImage) return url;
-    return url.replaceFirstMapped(
-      RegExp(r'/(image|video|auto)/upload/'),
-      (_) => '/raw/upload/',
-    );
-  }
+  // Supabase public URLs are used directly — no URL manipulation needed.
+  String get _cleanUrl => widget.fileUrl;
 
   // ─────────────────────────────────────────────────────────────────────────
   @override
@@ -69,16 +70,32 @@ class _FileViewerScreenState extends State<FileViewerScreen> {
 
   // ── master dispatcher ────────────────────────────────────────────────────
   Future<void> _load() async {
-    setState(() { _phase = _Phase.loading; _error = ''; });
+    setState(() { _phase = _Phase.loading; _error = ''; _pdfBytes = null; });
     try {
-      if (_isImage || _isPdf) { 
+      if (_isPdf) {
+        if (kIsWeb) {
+          // On web: register an iframe to embed PDF directly — bypasses CORS entirely.
+          final viewId = 'pdf-iframe-${DateTime.now().millisecondsSinceEpoch}';
+          // ignore: undefined_prefixed_name
+          ui_web.platformViewRegistry.registerViewFactory(viewId, (int id) {
+            final iframe = html.IFrameElement()
+              ..src = _cleanUrl
+              ..style.border = 'none'
+              ..style.width = '100%'
+              ..style.height = '100%'
+              ..allow = 'fullscreen';
+            return iframe;
+          });
+          _iframeViewId = viewId;
+          setState(() => _phase = _Phase.ready);
+        } else {
+          setState(() => _phase = _Phase.ready);
+        }
+      } else if (_isImage) { 
         setState(() => _phase = _Phase.ready); 
-      }
-      else if (_isVideo) { 
+      } else if (_isVideo) { 
         await _initVideo(); 
-      }
-      else { 
-        // ── Any other document (doc, docx, ppt, xls, txt) opens IN-APP via Google Viewer WebView
+      } else { 
         await _initWebViewDoc(); 
       }
     } catch (e) {
@@ -151,7 +168,7 @@ class _FileViewerScreenState extends State<FileViewerScreen> {
       ),
       body: switch (_phase) {
         _Phase.loading => _LoadingBody(isAr: isAr),
-        _Phase.error   => _ErrorBody(error: _error, onRetry: _load, isAr: isAr),
+        _Phase.error   => _ErrorBody(error: _error, onRetry: _load, isAr: isAr, fileUrl: widget.fileUrl),
         _Phase.ready   => _buildContent(isAr, isDark),
       },
     );
@@ -160,6 +177,11 @@ class _FileViewerScreenState extends State<FileViewerScreen> {
   Widget _buildContent(bool isAr, bool isDark) {
     // ── PDF — stream directly via network (No download required) ────────────
     if (_isPdf) {
+      // Web: embed PDF directly via iframe — no CORS, no bytes download needed.
+      if (kIsWeb && _iframeViewId != null) {
+        return HtmlElementView(viewType: _iframeViewId!);
+      }
+      // Native: stream directly from network
       return SfPdfViewer.network(
         _cleanUrl,
         canShowScrollHead: false,
@@ -208,7 +230,7 @@ class _FileViewerScreenState extends State<FileViewerScreen> {
       );
     }
 
-    return _ErrorBody(error: isAr ? 'نوع الملف غير معروف' : 'Unknown file type', onRetry: _load, isAr: isAr);
+    return _ErrorBody(error: isAr ? 'نوع الملف غير معروف' : 'Unknown file type', onRetry: _load, isAr: isAr, fileUrl: widget.fileUrl);
   }
 }
 
@@ -247,7 +269,8 @@ class _ErrorBody extends StatelessWidget {
   final String error;
   final VoidCallback onRetry;
   final bool isAr;
-  const _ErrorBody({required this.error, required this.onRetry, required this.isAr});
+  final String fileUrl;
+  const _ErrorBody({required this.error, required this.onRetry, required this.isAr, required this.fileUrl});
 
   @override
   Widget build(BuildContext context) => Center(
@@ -261,10 +284,16 @@ class _ErrorBody extends StatelessWidget {
         const SizedBox(height: 20),
         Text(isAr ? 'تعذر فتح الملف' : 'Could not open file',
             style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18)),
-        const SizedBox(height: 10),
-        Text(error,
-            style: TextStyle(color: Colors.grey[600], fontSize: 12),
+        SelectableText(error.isEmpty ? 'Unknown Error' : error,
+            style: const TextStyle(color: Colors.redAccent, fontSize: 13, fontWeight: FontWeight.bold),
             textAlign: TextAlign.center),
+        const SizedBox(height: 8),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: SelectableText('URL: $fileUrl',
+              style: TextStyle(color: Colors.grey[500], fontSize: 9),
+              textAlign: TextAlign.center),
+        ),
         const SizedBox(height: 28),
         ElevatedButton.icon(
           onPressed: onRetry,

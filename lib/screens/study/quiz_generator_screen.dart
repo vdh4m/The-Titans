@@ -16,7 +16,7 @@ class QuizGeneratorScreen extends StatefulWidget {
 }
 
 class _QuizGeneratorScreenState extends State<QuizGeneratorScreen> {
-  static const _apiKey = 'AIzaSyBFYmfZC_D-4vwigPrOM0MiPYYEZb4UdBM';
+  static const _apiKey = 'AIzaSyAZZa9NXGiAV4JCnlFT96juU37cMWPj9ko';
 
   List<Map<String, dynamic>> _questions = [];
   int _currentQ = 0;
@@ -123,18 +123,25 @@ class _QuizGeneratorScreenState extends State<QuizGeneratorScreen> {
         padding: const EdgeInsets.all(20),
         child: Column(children: [
           // Header
-          Container(width: double.infinity, padding: const EdgeInsets.all(20),
+          Container(
+            width: double.infinity, padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(colors: [Color(0xFF7209B7), AppTheme.primaryColor], begin: Alignment.topLeft, end: Alignment.bottomRight),
+              gradient: const LinearGradient(colors: [Color(0xFF7209B7), AppTheme.primaryColor],
+                begin: Alignment.topLeft, end: Alignment.bottomRight),
               borderRadius: BorderRadius.circular(20)),
-            child: Column(children: [
-              const Text('🎯', style: TextStyle(fontSize: 40)),
-              Text(isAr ? 'مولّد الكويز بالـ AI' : 'AI Quiz Generator',
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18)),
-              Text(isAr ? 'اعمل كويز من مواد كورساتك' : 'Generate quiz from your course materials',
-                style: const TextStyle(color: Colors.white70, fontSize: 12)),
+            child: Row(children: [
+              Container(padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), shape: BoxShape.circle),
+                child: const Icon(Icons.quiz, color: Colors.white, size: 28)),
+              const SizedBox(width: 16),
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(isAr ? 'مولد الكويزات الذكي' : 'AI-Powered Quiz Generator',
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18)),
+                Text(isAr ? 'الـ AI هيعملك امتحان من ملفاتك الدراسية' : 'AI will generate an exam from your study materials',
+                  style: const TextStyle(color: Colors.white70, fontSize: 12)),
+              ])),
             ])),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
 
           if (_questions.isEmpty) ...[
             // Source toggle
@@ -163,7 +170,12 @@ class _QuizGeneratorScreenState extends State<QuizGeneratorScreen> {
             const SizedBox(height: 16),
 
             if (_useCourse)
-              CourseMaterialPicker(onPdfSelected: (bytes, course, mat) => _generate(bytes, '$course — $mat'))
+              CourseMaterialPicker(
+                onPdfSelected: (bytes, course, mat) => _generate(bytes, '$course — $mat'),
+                actionLabel: 'Generate Quiz',
+                actionLabelAr: 'اعمل كويز',
+                actionIcon: Icons.quiz_rounded,
+              )
             else
               GestureDetector(
                 onTap: _loading ? null : _pickFile,

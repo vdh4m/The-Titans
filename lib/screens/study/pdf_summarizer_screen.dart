@@ -16,7 +16,7 @@ class PdfSummarizerScreen extends StatefulWidget {
 }
 
 class _PdfSummarizerScreenState extends State<PdfSummarizerScreen> {
-  static const _apiKey = 'AIzaSyBFYmfZC_D-4vwigPrOM0MiPYYEZb4UdBM';
+  static const _apiKey = 'AIzaSyAZZa9NXGiAV4JCnlFT96juU37cMWPj9ko';
 
   String? _fileName;
   String? _summary;
@@ -111,20 +111,24 @@ class _PdfSummarizerScreenState extends State<PdfSummarizerScreen> {
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           // Header
           Container(
-            width: double.infinity, padding: const EdgeInsets.all(20),
+            width: double.infinity, padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
             decoration: BoxDecoration(
               gradient: const LinearGradient(colors: [Color(0xFF7209B7), AppTheme.primaryColor],
                 begin: Alignment.topLeft, end: Alignment.bottomRight),
               borderRadius: BorderRadius.circular(20)),
-            child: Column(children: [
-              const Text('📖', style: TextStyle(fontSize: 40)),
-              const SizedBox(height: 8),
-              Text(isAr ? 'ملخص ذكي بالـ AI' : 'AI-Powered Summarizer',
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18)),
-              Text(isAr ? 'لخّص أي PDF من مواد كورساتك أو جهازك' : 'Summarize any PDF from your courses or device',
-                style: const TextStyle(color: Colors.white70, fontSize: 12)),
+            child: Row(children: [
+              Container(padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), shape: BoxShape.circle),
+                child: const Icon(Icons.menu_book, color: Colors.white, size: 28)),
+              const SizedBox(width: 16),
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(isAr ? 'ملخص ذكي بالـ AI' : 'AI-Powered Summarizer',
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18)),
+                Text(isAr ? 'لخّص أي PDF من مواد كورساتك أو جهازك' : 'Summarize any PDF from your courses or device',
+                  style: const TextStyle(color: Colors.white70, fontSize: 12)),
+              ])),
             ])),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
 
           // Summary type
           Text(isAr ? 'نوع الملخص' : 'Summary Type',
@@ -184,6 +188,9 @@ class _PdfSummarizerScreenState extends State<PdfSummarizerScreen> {
                 _pdfBytes = bytes;
                 _summarize(bytes, '$courseTitle — $matTitle');
               },
+              actionLabel: 'Summarize',
+              actionLabelAr: 'لخّص الملف',
+              actionIcon: Icons.auto_awesome_rounded,
             ),
             const SizedBox(height: 16),
           ] else ...[

@@ -55,6 +55,7 @@ dependencies:
   pdf: ^3.10.8
   printing: ^5.12.0
   camera: ^0.10.5+9
+  supabase_flutter: ^2.9.0
   clipboard: ^0.1.3
 
 dev_dependencies:

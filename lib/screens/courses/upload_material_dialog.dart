@@ -1,16 +1,13 @@
-import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:uuid/uuid.dart';
 import '../../models/course_model.dart';
 import '../../utils/app_theme.dart';
+import '../../utils/supabase_storage_service.dart';
 import '../../utils/xp_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../home/notification_center_screen.dart';
-
-const _cloudName    = 'dupiy6t8r';
-const _uploadPreset = 'StudyHub';
 
 /// Opens the improved upload dialog for a course material.
 /// Shows: file name chip, Arabic/English title fields, live progress bar.
@@ -124,35 +121,37 @@ Future<void> showUploadMaterialDialog({
           if (!uploading)
             ElevatedButton.icon(
               onPressed: () async {
-                setD(() { uploading = true; errorMsg = null; uploadProgress = 0.05; });
+                setD(() { uploading = true; errorMsg = null; uploadProgress = 0.1; });
                 try {
-                  final isVideo = ['mp4', 'mov', 'avi', 'mkv', 'webm'].contains(ext);
-                  final resourceType = isVideo ? 'video' : 'raw';
-                  final uri = Uri.parse(
-                      'https://api.cloudinary.com/v1_1/$_cloudName/$resourceType/upload');
+                  setD(() => uploadProgress = 0.3);
 
-                  final request = http.MultipartRequest('POST', uri)
-                    ..fields['upload_preset'] = _uploadPreset
-                    ..fields['folder'] = 'studyhub/materials/${course.id}'
-                    ..files.add(http.MultipartFile.fromBytes(
-                        'file', file.bytes!, filename: file.name));
+                  // ── Upload to Supabase Storage ───────────────────────
+                  final url = await SupabaseStorageService.uploadFile(
+                    courseId: course.id,
+                    filename: file.name,
+                    bytes: file.bytes!,
+                  );
 
-                  setD(() => uploadProgress = 0.2);
-                  final response = await request.send();
-                  setD(() => uploadProgress = 0.8);
-                  final body = jsonDecode(await response.stream.bytesToString());
-                  setD(() => uploadProgress = 0.95);
-
-                  if (response.statusCode != 200) {
-                    throw Exception(body['error']?['message'] ?? 'Upload failed');
-                  }
-
-                  final url     = body['secure_url'] as String;
+                  setD(() => uploadProgress = 0.85);
                   final id      = const Uuid().v4();
                   final titleAr = tArC.text.trim().isEmpty ? file.name : tArC.text.trim();
                   final titleEn = tEnC.text.trim().isEmpty ? file.name : tEnC.text.trim();
 
                   await XpService.award(user.uid, XpEvent.uploadMaterial);
+
+                  // ── Save to Supabase Database ───────────────────────
+                  await Supabase.instance.client.from('materials').insert({
+                    'course_id':   course.id,
+                    'title_ar':    titleAr,
+                    'title_en':    titleEn,
+                    'file_url':    url,
+                    'file_type':   ext,
+                    'uploaded_by': user.uid,
+                    'uploaded_at': DateTime.now().millisecondsSinceEpoch,
+                  });
+
+                  // Also keep Firestore for now to avoid breaking existing views, 
+                  // but the priority is Supabase.
                   await FirebaseFirestore.instance.collection('materials').doc(id).set({
                     'id':         id,
                     'courseId':   course.id,
