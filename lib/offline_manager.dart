@@ -34,8 +34,8 @@ class OfflineManager {
     final path = '${dir.path}/offline/$id.$ext';
     await Directory('${dir.path}/offline').create(recursive: true);
 
-    // Try URL candidates (handles Cloudinary image/raw mismatch)
-    final candidates = _urlCandidates(url, ext);
+    // Supabase public URLs are direct — no URL candidates needed
+    final candidates = [url];
     Object? lastErr;
 
     for (final candidate in candidates) {
@@ -105,15 +105,9 @@ class OfflineManager {
       all().where((m) => m['courseId'] == courseId).toList();
 
   // ── Helpers ───────────────────────────────────────────────────────────────
-  static List<String> _urlCandidates(String url, String ext) {
-    if (!url.contains('cloudinary.com')) return [url];
-    final isMedia = ['mp4','mov','avi','mkv','webm','jpg','jpeg','png','gif','webp']
-        .contains(ext.toLowerCase());
-    if (isMedia) return [url];
-    final toRaw  = url.replaceFirstMapped(RegExp(r'/(image|video|auto)/upload/'), (_) => '/raw/upload/');
-    final toAuto = url.replaceFirstMapped(RegExp(r'/(image|video|raw)/upload/'),  (_) => '/auto/upload/');
-    return {url, toRaw, toAuto}.toList();
-  }
+  // Supabase public URLs are direct — kept as a list for API compatibility.
+  // ignore: unused_element
+  static List<String> _urlCandidates(String url, String _ext) => [url];
 
   static String formatSize(int bytes) {
     if (bytes < 1024) return '$bytes B';
