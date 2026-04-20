@@ -7,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 // ignore: unused_import
 import 'package:file_picker/file_picker.dart';
 import 'dart:convert';
+import 'package:supabase_flutter/supabase_flutter.dart';
 // ignore: unused_import
 import 'package:http/http.dart' as http;
 import 'package:studyhub/generated/l10n/app_localizations.dart';
@@ -238,30 +239,29 @@ class _MatTab extends StatelessWidget {
           ),
         ),
       Expanded(
-        child: StreamBuilder<List<Map<String, dynamic>>>(
-          stream: Supabase.instance.client
-              .from('materials')
-              .stream(primaryKey: ['id'])
-              .eq('course_id', course.id),
+        child: StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance
+              .collection('materials')
+              .where('courseId', isEqualTo: course.id)
+              .snapshots(),
           builder: (_, snap) {
             if (snap.hasError) return Center(child: Text('Error: ${snap.error}'));
             if (!snap.hasData) return const Center(child: CircularProgressIndicator());
-            final mats = snap.data!;
-            if (mats.isEmpty) return Center(child: Text(l10n.noCoursesYet));
-            
-            // Sort by uploaded_at descending
-            mats.sort((a, b) {
-              final aT = a['uploaded_at'] is int ? a['uploaded_at'] as int : 0;
-              final bT = b['uploaded_at'] is int ? b['uploaded_at'] as int : 0;
-              return bT.compareTo(aT);
-            });
-
+            final docs = snap.data!.docs;
+            if (docs.isEmpty) return Center(child: Text(l10n.noCoursesYet));
+            // Sort by uploadedAt descending
+            final mats = docs.map((d) => d.data() as Map<String, dynamic>).toList()
+              ..sort((a, b) {
+                final aT = a['uploadedAt'] is int ? a['uploadedAt'] as int : 0;
+                final bT = b['uploadedAt'] is int ? b['uploadedAt'] as int : 0;
+                return bT.compareTo(aT);
+              });
             return ListView.builder(
               padding: const EdgeInsets.all(14),
               itemCount: mats.length,
               itemBuilder: (_, i) => _MatCard(
                 data: mats[i],
-                docId: mats[i]['id']?.toString() ?? '',
+                docId: docs[i].id,
                 isAr: isAr,
                 canManage: canManage,
               ),
