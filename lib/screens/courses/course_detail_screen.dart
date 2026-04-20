@@ -238,28 +238,30 @@ class _MatTab extends StatelessWidget {
           ),
         ),
       Expanded(
-        child: StreamBuilder<QuerySnapshot>(
-          stream: FirebaseFirestore.instance
-              .collection('materials')
-              .where('courseId', isEqualTo: course.id)
-              .snapshots(),
+        child: StreamBuilder<List<Map<String, dynamic>>>(
+          stream: Supabase.instance.client
+              .from('materials')
+              .stream(primaryKey: ['id'])
+              .eq('course_id', course.id),
           builder: (_, snap) {
+            if (snap.hasError) return Center(child: Text('Error: ${snap.error}'));
             if (!snap.hasData) return const Center(child: CircularProgressIndicator());
-            final docs = snap.data!.docs;
-            if (docs.isEmpty) return Center(child: Text(l10n.noCoursesYet));
-            // Sort by uploadedAt in Dart (no orderBy needed)
-            final mats = docs.map((d) => d.data() as Map<String, dynamic>).toList()
-              ..sort((a, b) {
-                final aT = a['uploadedAt'] is int ? a['uploadedAt'] as int : 0;
-                final bT = b['uploadedAt'] is int ? b['uploadedAt'] as int : 0;
-                return bT.compareTo(aT);
-              });
+            final mats = snap.data!;
+            if (mats.isEmpty) return Center(child: Text(l10n.noCoursesYet));
+            
+            // Sort by uploaded_at descending
+            mats.sort((a, b) {
+              final aT = a['uploaded_at'] is int ? a['uploaded_at'] as int : 0;
+              final bT = b['uploaded_at'] is int ? b['uploaded_at'] as int : 0;
+              return bT.compareTo(aT);
+            });
+
             return ListView.builder(
               padding: const EdgeInsets.all(14),
               itemCount: mats.length,
               itemBuilder: (_, i) => _MatCard(
                 data: mats[i],
-                docId: docs[i].id,
+                docId: mats[i]['id']?.toString() ?? '',
                 isAr: isAr,
                 canManage: canManage,
               ),
@@ -288,11 +290,12 @@ class _MatCardState extends State<_MatCard> {
   bool _downloading = false;
   double _progress  = 0;
 
-  String get _id    => widget.data['id'] ?? widget.docId;
-  String get _ext   => (widget.data['fileType'] ?? 'file') as String;
+  String get _id    => (widget.data['id'] ?? widget.docId).toString();
+  String get _ext   => (widget.data['file_type'] ?? widget.data['fileType'] ?? 'file') as String;
   String get _title => widget.isAr
-      ? (widget.data['titleAr'] ?? '') as String
-      : (widget.data['titleEn'] ?? '') as String;
+      ? (widget.data['title_ar'] ?? widget.data['titleAr'] ?? '') as String
+      : (widget.data['title_en'] ?? widget.data['titleEn'] ?? '') as String;
+  String get _url   => (widget.data['file_url'] ?? widget.data['fileUrl'] ?? '') as String;
 
   bool get _isDownloaded => OfflineManager.isDownloaded(_id);
 
@@ -301,7 +304,7 @@ class _MatCardState extends State<_MatCard> {
     final localPath = OfflineManager.localPath(_id);
     Navigator.push(context, MaterialPageRoute(
       builder: (_) => FileViewerScreen(
-        fileUrl: (localPath != null) ? 'file://$localPath' : (widget.data['fileUrl'] ?? ''),
+        fileUrl: (localPath != null) ? 'file://$localPath' : _url,
         title: _title,
         fileType: _ext,
       ),
