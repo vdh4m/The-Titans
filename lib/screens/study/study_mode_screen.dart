@@ -311,110 +311,159 @@ class _StudyTools extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenW = MediaQuery.sizeOf(context).width;
+    final isDesktop = screenW >= 900;
+    final isTablet  = screenW >= 600 && screenW < 900;
+    final cols = isDesktop ? 4 : isTablet ? 3 : 2;
+    // On desktop, cards are compact horizontal tiles (more like a grid of chips)
+    final cardAspect = isDesktop ? 2.6 : isTablet ? 2.0 : 1.45;
+
+    final tools = [
+      _Tool(Icons.style_rounded,          isAr ? 'فلاش كارد'        : 'Flashcards',      isAr ? 'بطاقات مراجعة'         : 'Review cards',          AppTheme.primaryColor,         () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FlashcardScreen()))),
+      _Tool(Icons.auto_awesome_rounded,   isAr ? 'تلخيص PDF'        : 'PDF Summary',     isAr ? 'بالذكاء الاصطناعي'    : 'AI-powered',             const Color(0xFF7209B7),       () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PdfSummarizerScreen()))),
+      if (!user.isDoctor)
+      _Tool(Icons.quiz_rounded,           isAr ? 'توليد أسئلة'      : 'Quiz Gen',        isAr ? 'أسئلة من PDF'          : 'Questions from PDF',    const Color(0xFFFF9F1C),       () => Navigator.push(context, MaterialPageRoute(builder: (_) => const QuizGeneratorScreen()))),
+      _Tool(Icons.leaderboard_rounded,    isAr ? 'المتصدرون'        : 'Leaderboard',     isAr ? 'منافسة الكلية'         : 'Faculty ranking',        const Color(0xFF06D6A0),       () => Navigator.push(context, MaterialPageRoute(builder: (_) => LeaderboardScreen(user: user)))),
+      _Tool(Icons.warning_amber_rounded,  isAr ? 'وضع الطوارئ'      : 'Exam Survival',   isAr ? 'باقي 24 ساعة'          : '24h before exam',        Colors.red,                    () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ExamSurvivalScreen()))),
+      _Tool(Icons.emoji_emotions_outlined,isAr ? 'مزاج المذاكرة'    : 'Study Mood',      isAr ? 'اختر طريقتك'           : 'Pick your style',        const Color(0xFFFF6B35),       () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MoodSelectorScreen()))),
+      _Tool(Icons.psychology_rounded,     isAr ? 'امتحان تجريبي'    : 'Mock Exam',       isAr ? 'AI يمتحنك'             : 'AI-powered exam',        const Color(0xFF7209B7),       () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MockExamScreen()))),
+      _Tool(Icons.summarize_rounded,      isAr ? 'لخص ملاحظاتي'    : 'Summarize Notes', isAr ? 'تلخيص ذكي'             : 'AI summary',             const Color(0xFF06D6A0),       () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SummarizeNotesScreen()))),
+      _Tool(Icons.map_rounded,            isAr ? 'خارطة الطريق'     : 'Course Roadmap',  isAr ? 'تقدمك وحدة بوحدة'      : 'Progress unit by unit',  const Color(0xFF06D6A0),       () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CourseRoadmapScreen()))),
+      _Tool(Icons.calendar_today_rounded, isAr ? 'جدول المراجعة'    : 'Revision Planner',isAr ? 'خطة ذكية قبل الامتحان' : 'Smart pre-exam schedule', const Color(0xFF4361EE),       () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SmartRevisionScreen()))),
+      _Tool(Icons.calculate_rounded,      isAr ? 'آلة حاسبة علمية' : 'Calculator',      isAr ? 'Casio fx-991ES'        : 'Casio fx-991ES style',   const Color(0xFF1A3A4A),       () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CalculatorScreen()))),
+      _Tool(Icons.translate_rounded,      isAr ? 'مترجم'            : 'Translator',      isAr ? '٣٨ لغة'               : '38 languages',           const Color(0xFF06D6A0),       () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TranslatorScreen()))),
+      _Tool(Icons.document_scanner_rounded,isAr ? 'ماسح ضوئي'      : 'Scanner',         isAr ? 'صورة → نص / PDF'       : 'Image → Text / PDF',    Colors.orange,                 () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ScannerScreen()))),
+      _Tool(Icons.mic_rounded,            isAr ? 'صوت → نص'         : 'Voice to Text',   isAr ? 'تحويل صوتي فوري'       : 'Instant transcription',  Colors.red,                    () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SpeechToTextScreen()))),
+      _Tool(Icons.record_voice_over_rounded,isAr ? 'نص → صوت'      : 'Text to Voice',   isAr ? 'استمع للنص'            : 'Listen to text',         const Color(0xFF7209B7),       () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TextToVoiceScreen()))),
+    ];
+
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-    Text(isAr ? 'أدوات الدراسة' : 'Study Tools',
-      style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-    const SizedBox(height: 12),
-    LayoutBuilder(builder: (ctx, constraints) {
-      final w = constraints.maxWidth;
-      final aspectRatio = w < 340 ? 1.2 : w < 400 ? 1.35 : 1.45;
-      return GridView.count(
-        crossAxisCount: 2, shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
-        crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: aspectRatio,
-      children: [
-        _ToolCard(icon: Icons.style_rounded, label: isAr ? 'فلاش كارد' : 'Flashcards',
-          subtitle: isAr ? 'بطاقات مراجعة' : 'Review cards', color: AppTheme.primaryColor,
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FlashcardScreen()))),
-        _ToolCard(icon: Icons.auto_awesome_rounded, label: isAr ? 'تلخيص PDF' : 'PDF Summary',
-          subtitle: isAr ? 'بالذكاء الاصطناعي' : 'AI-powered', color: const Color(0xFF7209B7),
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PdfSummarizerScreen()))),
-        if (!user.isDoctor)
-        _ToolCard(icon: Icons.quiz_rounded, label: isAr ? 'توليد أسئلة' : 'Quiz Gen',
-          subtitle: isAr ? 'أسئلة من PDF' : 'Questions from PDF', color: const Color(0xFFFF9F1C),
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const QuizGeneratorScreen()))),
-        _ToolCard(icon: Icons.leaderboard_rounded, label: isAr ? 'المتصدرون' : 'Leaderboard',
-          subtitle: isAr ? 'منافسة الكلية' : 'Faculty ranking', color: const Color(0xFF06D6A0),
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => LeaderboardScreen(user: user)))),
-        _ToolCard(icon: Icons.warning_amber_rounded, label: isAr ? 'وضع الطوارئ' : 'Exam Survival',
-          subtitle: isAr ? 'باقي 24 ساعة' : '24h before exam', color: Colors.red,
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ExamSurvivalScreen()))),
-        _ToolCard(icon: Icons.emoji_emotions_outlined, label: isAr ? 'مزاج المذاكرة' : 'Study Mood',
-          subtitle: isAr ? 'اختر طريقتك' : 'Pick your style', color: const Color(0xFFFF6B35),
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MoodSelectorScreen()))),
-        _ToolCard(icon: Icons.psychology_rounded, label: isAr ? 'امتحان تجريبي' : 'Mock Exam',
-          subtitle: isAr ? 'AI يمتحنك' : 'AI-powered exam', color: const Color(0xFF7209B7),
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MockExamScreen()))),
-        _ToolCard(icon: Icons.summarize_rounded, label: isAr ? 'لخص ملاحظاتي' : 'Summarize Notes',
-          subtitle: isAr ? 'تلخيص ذكي' : 'AI summary', color: const Color(0xFF06D6A0),
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SummarizeNotesScreen()))),
-        _ToolCard(icon: Icons.map_rounded, label: isAr ? 'خارطة الطريق' : 'Course Roadmap',
-          subtitle: isAr ? 'تقدمك وحدة بوحدة' : 'Progress unit by unit', color: const Color(0xFF06D6A0),
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CourseRoadmapScreen()))),
-        _ToolCard(icon: Icons.calendar_today_rounded, label: isAr ? 'جدول المراجعة' : 'Revision Planner',
-          subtitle: isAr ? 'خطة ذكية قبل الامتحان' : 'Smart pre-exam schedule', color: const Color(0xFF4361EE),
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SmartRevisionScreen()))),
-        _ToolCard(icon: Icons.calculate_rounded, label: isAr ? 'آلة حاسبة علمية' : 'Calculator',
-          subtitle: isAr ? 'Casio fx-991ES' : 'Casio fx-991ES style', color: const Color(0xFF1A3A4A),
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CalculatorScreen()))),
-        _ToolCard(icon: Icons.translate_rounded, label: isAr ? 'مترجم' : 'Translator',
-          subtitle: isAr ? '٣٨ لغة' : '38 languages', color: const Color(0xFF06D6A0),
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TranslatorScreen()))),
-        _ToolCard(icon: Icons.document_scanner_rounded, label: isAr ? 'ماسح ضوئي' : 'Scanner',
-          subtitle: isAr ? 'صورة → نص / PDF' : 'Image → Text / PDF', color: Colors.orange,
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ScannerScreen()))),
-        _ToolCard(icon: Icons.mic_rounded, label: isAr ? 'صوت → نص' : 'Voice to Text',
-          subtitle: isAr ? 'تحويل صوتي فوري' : 'Instant transcription', color: Colors.red,
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SpeechToTextScreen()))),
-        _ToolCard(icon: Icons.record_voice_over_rounded, label: isAr ? 'نص → صوت' : 'Text to Voice',
-          subtitle: isAr ? 'استمع للنص' : 'Listen to text', color: const Color(0xFF7209B7),
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TextToVoiceScreen()))),
-      ]);
-    }),
-    const SizedBox(height: 16),
-    // Weekly report button
-    GestureDetector(
-      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const WeeklyReportScreen())),
-      child: Container(width: double.infinity, padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(colors: [AppTheme.primaryColor, Color(0xFF7209B7)], begin: Alignment.topLeft, end: Alignment.bottomRight),
-          borderRadius: BorderRadius.circular(14)),
-        child: Row(children: [
-          const Text('📊', style: TextStyle(fontSize: 24)),
-          const SizedBox(width: 12),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(isAr ? 'تقرير أسبوعك' : 'Your Weekly Report', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 14)),
-            Text(isAr ? 'شوف إحصائيات مذاكرتك هذا الأسبوع' : 'See your study stats this week', style: const TextStyle(color: Colors.white70, fontSize: 11)),
+      Text(isAr ? 'أدوات الدراسة' : 'Study Tools',
+        style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+      const SizedBox(height: 12),
+      GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: cols,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+          childAspectRatio: cardAspect,
+        ),
+        itemCount: tools.length,
+        itemBuilder: (_, i) => _ToolCard(tool: tools[i], isDesktop: isDesktop),
+      ),
+      const SizedBox(height: 16),
+      // Weekly report button
+      GestureDetector(
+        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const WeeklyReportScreen())),
+        child: Container(width: double.infinity, padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(colors: [AppTheme.primaryColor, Color(0xFF7209B7)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+            borderRadius: BorderRadius.circular(14)),
+          child: Row(children: [
+            const Text('📊', style: TextStyle(fontSize: 24)),
+            const SizedBox(width: 12),
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(isAr ? 'تقرير أسبوعك' : 'Your Weekly Report', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 14)),
+              Text(isAr ? 'شوف إحصائيات مذاكرتك هذا الأسبوع' : 'See your study stats this week', style: const TextStyle(color: Colors.white70, fontSize: 11)),
+            ])),
+            const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white70, size: 14),
           ])),
-          const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white70, size: 14),
-        ])),
-    ),
+      ),
     ]);
   }
 }
 
-class _ToolCard extends StatelessWidget {
-  final IconData icon; final String label, subtitle; final Color color; final VoidCallback onTap;
-  const _ToolCard({required this.icon, required this.label, required this.subtitle, required this.color, required this.onTap});
+class _Tool {
+  final IconData icon;
+  final String label, subtitle;
+  final Color color;
+  final VoidCallback onTap;
+  const _Tool(this.icon, this.label, this.subtitle, this.color, this.onTap);
+}
+
+class _ToolCard extends StatefulWidget {
+  final _Tool tool;
+  final bool isDesktop;
+  const _ToolCard({required this.tool, required this.isDesktop});
   @override
-  Widget build(BuildContext context) => GestureDetector(
-    onTap: onTap,
-    child: Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(colors: [color, color.withOpacity(0.7)], begin: Alignment.topLeft, end: Alignment.bottomRight),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: color.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 4))],
+  State<_ToolCard> createState() => _ToolCardState();
+}
+
+class _ToolCardState extends State<_ToolCard> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = widget.tool;
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit:  (_) => setState(() => _hovered = false),
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: t.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: EdgeInsets.symmetric(
+            horizontal: widget.isDesktop ? 14 : 12,
+            vertical: widget.isDesktop ? 12 : 12,
+          ),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [t.color, t.color.withOpacity(0.75)],
+              begin: Alignment.topLeft, end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(14),
+            boxShadow: [
+              BoxShadow(
+                color: t.color.withOpacity(_hovered ? 0.45 : 0.22),
+                blurRadius: _hovered ? 16 : 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          // Desktop: icon LEFT + text RIGHT (horizontal)
+          // Mobile:  icon TOP + text BOTTOM (vertical)
+          child: widget.isDesktop
+            ? Row(children: [
+                Container(
+                  padding: const EdgeInsets.all(7),
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(t.icon, color: Colors.white, size: 18),
+                ),
+                const SizedBox(width: 10),
+                Expanded(child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(t.label,
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 12),
+                      maxLines: 1, overflow: TextOverflow.ellipsis),
+                    Text(t.subtitle,
+                      style: const TextStyle(color: Colors.white70, fontSize: 10),
+                      maxLines: 1, overflow: TextOverflow.ellipsis),
+                  ],
+                )),
+              ])
+            : Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(8)),
+                  child: Icon(t.icon, color: Colors.white, size: 18),
+                ),
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(t.label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13)),
+                  Text(t.subtitle, style: const TextStyle(color: Colors.white70, fontSize: 10)),
+                ]),
+              ]),
+        ),
       ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-        Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(8)),
-          child: Icon(icon, color: Colors.white, size: 20)),
-        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 14)),
-          Text(subtitle, style: const TextStyle(color: Colors.white70, fontSize: 11)),
-        ]),
-      ]),
-    ),
-  );
+    );
+  }
 }
 
 // ── COURSE PICKER ─────────────────────────────────────────────────────────────
